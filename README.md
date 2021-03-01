@@ -34,3 +34,7 @@ Screen.rectangle(x,y,x2,y2,fill) -- Makes a rectangle with the two points suppli
 Screen.clear(home) -- Clears the screen and returns the cursor to home position (reduces flickering) depending on the 'home' argument
 Screen.draw(color) -- Draws the screen, if 'color' is disabled then no color will be rendered, reducing flickering
 ```
+
+Issues
+---
+Rendering without waiting at least 0.01 secs can cause serious flickering, add some kind of wait function to make this work properly
