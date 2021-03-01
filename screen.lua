@@ -1,23 +1,22 @@
 --Minimal CLI Screen handling library
---By Bowuigi
+--Copyright (c) Bowuigi 2021
 
 Screen={display={},textAttributes={},textColors={},BGColors={},textAttributesList={normal=0,bold=1,underscore=4,blink=5,reverse=7,concealed=8}}
 
 function Screen.newDisplay(w,h,fill)
 	Screen.display={} --clear the display
-	for x=1,w,1 do
+	for y=1,w,1 do
 	
-		Screen.display[x]={}
-		Screen.textAttributes[x]={}
-		Screen.textColors[x]={}
-		Screen.BGColors[x]={}
-		for y=1,h,1 do
+		Screen.display[y]={}
+		Screen.textAttributes[y]={}
+		Screen.textColors[y]={}
+		Screen.BGColors[y]={}
+		for x=1,h,1 do
 		
-			Screen.textAttributes[x][y]=0
-			Screen.textColors[x][y]=231
-			Screen.BGColors[x][y]=232
-			
-			Screen.display[x][y]=fill
+			Screen.textAttributes[y][x]=0
+			Screen.textColors[y][x]=231
+			Screen.BGColors[y][x]=232
+			Screen.display[y][x]=fill:sub(1,1)
 		
 		end
 	
@@ -27,15 +26,15 @@ end
 function Screen.clear(home)
 	io.write("\027[2J") --ANSI Clear Screen
 	if home then
-	io.write("\027[H")
+		io.write("\027[H")
 	end
 end
 
-function Screen.setCursorVisibility(vis)
-	if vis then
-	io.write("\027[?25h") -- ANSI show cursor
+function Screen.setCursorVisibility(visibility)
+	if visibility then
+		io.write("\027[?25h") -- ANSI show cursor
 	else
-	io.write("\027[?25l") -- ANSI hide cursor
+		io.write("\027[?25l") -- ANSI hide cursor
 	end
 end
 
@@ -44,7 +43,45 @@ function Screen.setCursorPosition(x,y)
 end
 
 local function clamp(val,min,max)
-return math.min(math.max(val,min),max)
+	return math.min(math.max(val,min),max)
+end
+
+function Screen.setPixel(x,y,pixel)
+	if Screen.display[y]~=nil then
+		if Screen.display[y][x]~=nil then
+			Screen.display[y][x]=pixel:sub(1,1)
+		end
+	end
+end
+
+function Screen.getPixel(x,y)
+	if Screen.display[y]~=nil then
+		return Screen.display[y][x]
+	else
+		return nil
+	end
+end
+
+function Screen.setColor(bg,x,y,colorID)
+	if Screen.display[y]~=nil then
+		if Screen.display[y][x]~=nil then
+			if bg then
+				Screen.BGColors[y][x]=clamp(colorID,0,255)
+			else
+				Screen.textColors[y][x]=clamp(colorID,0,255)
+			end
+		end
+	end
+end
+
+function Screen.getColor(bg,x,y)
+	if Screen.display[y] then
+		if bg then
+			return Screen.BGColors[y][x]
+		else
+			return Screen.textColors[y][x]
+		end
+	end
 end
 
 function Screen.rectangle(x,y,x2,y2,fill)
@@ -52,7 +89,7 @@ function Screen.rectangle(x,y,x2,y2,fill)
 		if Screen.display[xx]~=nil then
 			for yy=y,y2,1 do
 				if Screen.display[xx][yy]~=nil then
-					Screen.display[xx][yy]=fill
+					Screen.display[xx][yy]=fill:sub(1,1)
 				end
 			end
 		end
@@ -70,13 +107,16 @@ function Screen.draw(color)
 				draw=draw..("\027[38;5;"..Screen.textColors[x][y].."m")
 				draw=draw..("\027[48;5;"..Screen.BGColors[x][y].."m")
 			end
-			--Cache the display
+			if y==#Screen.display[x][1] then
+				draw=draw.."\n"
+			end
+			--Optimize drawing
 			draw=draw..(Screen.display[x][y])
 		
 		end
 	
 	end
-	print(draw)
+	io.write(draw)
 
 end
 
